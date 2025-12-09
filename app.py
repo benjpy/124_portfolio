@@ -71,7 +71,7 @@ st.markdown("""
     
     /* Typography */
     .company-name {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         font-weight: 700;
         color: #1a1a1a;
         margin-bottom: 4px;
@@ -82,7 +82,7 @@ st.markdown("""
         text-decoration: underline;
     }
     .meta-tag {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         color: #666;
         background-color: #f1f3f5;
         padding: 4px 10px;
@@ -93,13 +93,13 @@ st.markdown("""
         font-weight: 500;
     }
     .description-text {
-        font-size: 1rem;
+        font-size: 1.1rem;
         color: #333;
         line-height: 1.6;
         margin-top: 12px;
     }
     .location-text {
-        font-size: 0.9rem;
+        font-size: 1.0rem;
         color: #555;
         display: flex;
         align-items: center;
@@ -253,7 +253,18 @@ if query:
             end = start + ITEMS_PER_PAGE            
             page_results = results.iloc[start:end]
             
-            st.markdown(f"<div style='margin-bottom: 20px; color: #666; font-size: 0.9em;'>Found {total_results} companies. Showing {start+1}-{min(end, total_results)}.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='margin-bottom: 10px; color: #666; font-size: 0.9em;'>Found {total_results} companies. Showing {start+1}-{min(end, total_results)}.</div>", unsafe_allow_html=True)
+            
+            # Export Button
+            csv = results.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download Results as CSV",
+                data=csv,
+                file_name='portfolio_search_results.csv',
+                mime='text/csv',
+            )
+            
+            st.markdown("###") # Spacer
             
             for _, row in page_results.iterrows():
                 # Data Prep
@@ -282,6 +293,15 @@ if query:
                 status_bg = "#e6f4ea" if is_operating else "#fce8e6"
                 status_color = "#137333" if is_operating else "#c5221f"
 
+                # Export Button
+                csv = results.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Download Results as CSV",
+                    data=csv,
+                    file_name='portfolio_search_results.csv',
+                    mime='text/csv',
+                )
+
                 # Compact Layout: Name + Tags + Location in one wrapping flex container
                 card_html = (
                     f'<div class="result-card">'
@@ -289,14 +309,14 @@ if query:
                     f'  <div style="flex: 1; margin-right: 12px;">'
                     f'      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">'
                     f'          <a href="{website}" target="_blank" class="company-name" style="margin-bottom: 0; line-height: 1.2;">{row["Name"]}</a>'
-                    f'          <span class="location-text" style="font-size: 0.9rem; margin-bottom: 0; color: #555;">📍 {location_str}</span>'
-                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["Program Category"]}</span>'
-                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["FA Code"]}</span>'
-                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem; background-color: {status_bg}; color: {status_color};">{status}</span>'
+                    f'          <span class="location-text" style="font-size: 1.0rem; margin-bottom: 0; color: #555;">📍 {location_str}</span>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 3px 10px; font-size: 0.85rem;">{row["Program Category"]}</span>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 3px 10px; font-size: 0.85rem;">{row["FA Code"]}</span>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 3px 10px; font-size: 0.85rem; background-color: {status_bg}; color: {status_color};">{status}</span>'
                     f'      </div>'
                     f'  </div>'
                     f'  <div style="text-align: right; white-space: nowrap;">'
-                    f'      <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row["similarity"]*100)}%</span>'
+                    f'      <span style="font-size: 0.9rem; color: #999; font-weight: 600;">Match: {int(row["similarity"]*100)}%</span>'
                     f'  </div>'
                     f'</div>'
                     f'<div class="description-text" style="margin-top: 0;">{desc}</div>'
