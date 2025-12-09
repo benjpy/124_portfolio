@@ -21,6 +21,12 @@ genai.configure(api_key=GEMINI_API_KEY)
 EMBED_FILE = "embed.csv"
 LOGO_FILE = "sosv.png"
 
+import textwrap
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
 # --- Custom CSS for Modern UI ---
 st.markdown("""
 <style>
@@ -31,7 +37,10 @@ st.markdown("""
     }
     
     /* Search Input Styling */
+    /* Force white background and black text to override Dark Mode defaults */
     .stTextInput > div > div > input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
         border-radius: 12px;
         border: 1px solid #e0e0e0;
         padding: 12px 16px;
@@ -39,8 +48,8 @@ st.markdown("""
         transition: all 0.3s ease;
     }
     .stTextInput > div > div > input:focus {
-        border-color: #00A550;
-        box-shadow: 0 4px 10px rgba(0, 165, 80, 0.1);
+        border-color: #00A550 !important;
+        box-shadow: 0 4px 10px rgba(0, 165, 80, 0.1) !important;
     }
     
     /* Result Card Styling */
@@ -102,20 +111,15 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 40px;
+        justify-content: center;
+        margin-bottom: 30px;
         padding-top: 20px;
+        text-align: center;
     }
     .logo-img {
-        max-height: 80px;
-        margin-bottom: 16px;
+        max-width: 150px;
+        margin-bottom: 10px;
         object-fit: contain;
-    }
-    .page-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #111;
-        letter-spacing: -0.5px;
-        text-align: center;
     }
     
     /* Buttons */
@@ -176,23 +180,16 @@ def cosine_similarity(a, b):
 df = load_data()
 
 # --- Header Section ---
-# Use columns to center the content. 
-# We'll put the logo and title in the middle column and center elements within it.
-import textwrap
-
-# --- Header Section ---
-# Use columns to center the content. 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    if os.path.exists(LOGO_FILE):
-        # Center image using HTML/CSS or just simple column alignment
-        # To truly center, we can use a container and markdown
-        # Or better, just use center column logic.
-        left, mid, right = st.columns([1,2,1])
-        with mid:
-            st.image(LOGO_FILE, use_container_width=True)
-
-    st.markdown("<h1 style='text-align: center; color: #1e1e1e; margin-top: -10px;'>Portfolio Search</h1>", unsafe_allow_html=True)
+if os.path.exists(LOGO_FILE):
+    logo_b64 = get_base64_image(LOGO_FILE)
+    st.markdown(f"""
+        <div class="header-container">
+            <img src="data:image/png;base64,{logo_b64}" class="logo-img">
+            <h1 style='color: #1e1e1e; margin: 0; padding: 0;'>Portfolio Search</h1>
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("<h1 style='text-align: center; color: #1e1e1e;'>Portfolio Search</h1>", unsafe_allow_html=True)
 
 if df is None:
     st.warning(f"Embedding file `{EMBED_FILE}` not found. Please run `generate_embeddings.py` first.")
