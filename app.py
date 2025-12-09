@@ -256,9 +256,16 @@ if query:
                 if not str(website).startswith("http"):
                     website = f"https://{website}"
                     
-                city = row.get('Primary Location (City)', '')
-                country = row.get('Primary Location (Country)', '')
-                location_str = f"{city}, {country}".strip(", ")
+                city = row.get('Primary Location (City)')
+                country = row.get('Primary Location (Country)')
+                
+                loc_parts = []
+                if pd.notna(city) and str(city).strip().lower() != 'nan':
+                    loc_parts.append(str(city).strip())
+                if pd.notna(country) and str(country).strip().lower() != 'nan':
+                    loc_parts.append(str(country).strip())
+                    
+                location_str = ", ".join(loc_parts)
                 
                 desc = row.get('Description (SOSV)', row.get('Description', ''))
                 
