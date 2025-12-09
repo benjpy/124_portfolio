@@ -176,11 +176,18 @@ def cosine_similarity(a, b):
 df = load_data()
 
 # --- Header Section ---
-col1, col2, col3 = st.columns([1, 2, 1])
+# Use columns to center the content. 
+# We'll put the logo and title in the middle column and center elements within it.
+col1, col2, col3 = st.columns([1, 6, 1]) # Wider middle column
 with col2:
-    if os.path.exists(LOGO_FILE):
-        st.image(LOGO_FILE, width=150) # Adjust sizing as needed
-    st.markdown("<h1 style='text-align: center; color: #1e1e1e;'>Portfolio Search</h1>", unsafe_allow_html=True)
+    # To center an image in all viewports, we can use a nested layout or simple st.image with column modification
+    # Streamlit image alignment is tricky, let's use a sub-column approach which is robust
+    sub_col1, sub_col2, sub_col3 = st.columns([1, 1, 1])
+    with sub_col2:
+        if os.path.exists(LOGO_FILE):
+             st.image(LOGO_FILE, output_format="PNG")
+
+    st.markdown("<h1 style='text-align: center; color: #1e1e1e; margin-top: -10px;'>Portfolio Search</h1>", unsafe_allow_html=True)
 
 if df is None:
     st.warning(f"Embedding file `{EMBED_FILE}` not found. Please run `generate_embeddings.py` first.")
@@ -254,26 +261,26 @@ if query:
                 
                 # Render Card
                 st.markdown(f"""
-                <div class="result-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <a href="{website}" target="_blank" class="company-name">{row['Name']}</a>
-                            <div class="location-text">📍 {location_str}</div>
-                        </div>
-                        <div style="text-align: right;">
-                             <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row['similarity']*100)}%</span>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 8px; margin-bottom: 12px;">
-                        <span class="meta-tag">{row['Program Category']}</span>
-                        <span class="meta-tag">{row['FA Code']}</span>
-                        <span class="meta-tag" style="background-color: {'#e6f4ea' if row['Status'] == 'Operating' else '#fce8e6'}; color: {'#137333' if row['Status'] == 'Operating' else '#c5221f'};">{row['Status']}</span>
-                    </div>
-                    
-                    <div class="description-text">{desc}</div>
-                </div>
-                """, unsafe_allow_html=True)
+<div class="result-card">
+    <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div>
+            <a href="{website}" target="_blank" class="company-name">{row['Name']}</a>
+            <div class="location-text">📍 {location_str}</div>
+        </div>
+        <div style="text-align: right;">
+                <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row['similarity']*100)}%</span>
+        </div>
+    </div>
+    
+    <div style="margin-top: 8px; margin-bottom: 12px;">
+        <span class="meta-tag">{row['Program Category']}</span>
+        <span class="meta-tag">{row['FA Code']}</span>
+        <span class="meta-tag" style="background-color: {'#e6f4ea' if row['Status'] == 'Operating' else '#fce8e6'}; color: {'#137333' if row['Status'] == 'Operating' else '#c5221f'};">{row['Status']}</span>
+    </div>
+    
+    <div class="description-text">{desc}</div>
+</div>
+""", unsafe_allow_html=True)
             
             # Pagination Controls
             col1, col2, col3 = st.columns([1, 8, 1])
