@@ -108,18 +108,23 @@ st.markdown("""
     }
     
     /* Header/Logo Area */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
     .header-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: 30px;
-        padding-top: 20px;
+        margin-bottom: 20px;
+        padding-top: 0px;
         text-align: center;
     }
     .logo-img {
         max-width: 150px;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         object-fit: contain;
     }
     
