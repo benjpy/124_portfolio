@@ -22,6 +22,7 @@ EMBED_FILE = "embed.csv"
 LOGO_FILE = "sosv.png"
 
 import textwrap
+import base64
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
