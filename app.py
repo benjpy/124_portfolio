@@ -178,14 +178,19 @@ df = load_data()
 # --- Header Section ---
 # Use columns to center the content. 
 # We'll put the logo and title in the middle column and center elements within it.
-col1, col2, col3 = st.columns([1, 6, 1]) # Wider middle column
+import textwrap
+
+# --- Header Section ---
+# Use columns to center the content. 
+col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    # To center an image in all viewports, we can use a nested layout or simple st.image with column modification
-    # Streamlit image alignment is tricky, let's use a sub-column approach which is robust
-    sub_col1, sub_col2, sub_col3 = st.columns([1, 1, 1])
-    with sub_col2:
-        if os.path.exists(LOGO_FILE):
-             st.image(LOGO_FILE, output_format="PNG")
+    if os.path.exists(LOGO_FILE):
+        # Center image using HTML/CSS or just simple column alignment
+        # To truly center, we can use a container and markdown
+        # Or better, just use center column logic.
+        left, mid, right = st.columns([1,2,1])
+        with mid:
+            st.image(LOGO_FILE, use_container_width=True)
 
     st.markdown("<h1 style='text-align: center; color: #1e1e1e; margin-top: -10px;'>Portfolio Search</h1>", unsafe_allow_html=True)
 
@@ -260,27 +265,30 @@ if query:
                 desc = row.get('Description (SOSV)', row.get('Description', ''))
                 
                 # Render Card
-                st.markdown(f"""
-<div class="result-card">
-    <div style="display: flex; justify-content: space-between; align-items: start;">
-        <div>
-            <a href="{website}" target="_blank" class="company-name">{row['Name']}</a>
-            <div class="location-text">📍 {location_str}</div>
-        </div>
-        <div style="text-align: right;">
-                <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row['similarity']*100)}%</span>
-        </div>
-    </div>
-    
-    <div style="margin-top: 8px; margin-bottom: 12px;">
-        <span class="meta-tag">{row['Program Category']}</span>
-        <span class="meta-tag">{row['FA Code']}</span>
-        <span class="meta-tag" style="background-color: {'#e6f4ea' if row['Status'] == 'Operating' else '#fce8e6'}; color: {'#137333' if row['Status'] == 'Operating' else '#c5221f'};">{row['Status']}</span>
-    </div>
-    
-    <div class="description-text">{desc}</div>
-</div>
-""", unsafe_allow_html=True)
+                # Render Card
+                # textwrap.dedent handles stripping the common leading whitespace
+                # matching the indentation of the first line.
+                st.markdown(textwrap.dedent(f"""
+                    <div class="result-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <a href="{website}" target="_blank" class="company-name">{row['Name']}</a>
+                                <div class="location-text">📍 {location_str}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                    <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row['similarity']*100)}%</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 8px; margin-bottom: 12px;">
+                            <span class="meta-tag">{row['Program Category']}</span>
+                            <span class="meta-tag">{row['FA Code']}</span>
+                            <span class="meta-tag" style="background-color: {'#e6f4ea' if row['Status'] == 'Operating' else '#fce8e6'}; color: {'#137333' if row['Status'] == 'Operating' else '#c5221f'};">{row['Status']}</span>
+                        </div>
+                        
+                        <div class="description-text">{desc}</div>
+                    </div>
+                """), unsafe_allow_html=True)
             
             # Pagination Controls
             col1, col2, col3 = st.columns([1, 8, 1])
