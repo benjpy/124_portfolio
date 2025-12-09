@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-st.set_page_config(page_title="Portfolio Search", layout="wide")
+st.set_page_config(page_title="Portfolio Search", page_icon="sosv.png", layout="wide")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -19,6 +19,124 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 
 EMBED_FILE = "embed.csv"
+LOGO_FILE = "sosv.png"
+
+# --- Custom CSS for Modern UI ---
+st.markdown("""
+<style>
+    /* Global Clean Look */
+    .stApp {
+        background-color: #f8f9fa; /* Very light subtle grey/white */
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Search Input Styling */
+    .stTextInput > div > div > input {
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 12px 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        transition: all 0.3s ease;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #00A550;
+        box-shadow: 0 4px 10px rgba(0, 165, 80, 0.1);
+    }
+    
+    /* Result Card Styling */
+    .result-card {
+        background-color: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid #eaedf0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border-color: #00A550;
+    }
+    
+    /* Typography */
+    .company-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+        text-decoration: none;
+    }
+    .company-name:hover {
+        color: #00A550;
+        text-decoration: underline;
+    }
+    .meta-tag {
+        font-size: 0.85rem;
+        color: #666;
+        background-color: #f1f3f5;
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .description-text {
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.6;
+        margin-top: 12px;
+    }
+    .location-text {
+        font-size: 0.9rem;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    
+    /* Header/Logo Area */
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 40px;
+        padding-top: 20px;
+    }
+    .logo-img {
+        max-height: 80px;
+        margin-bottom: 16px;
+        object-fit: contain;
+    }
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #111;
+        letter-spacing: -0.5px;
+        text-align: center;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        border-radius: 8px;
+        border: none;
+        background-color: #00A550;
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+    }
+    .stButton > button:hover {
+        background-color: #008741;
+        box-shadow: 0 4px 12px rgba(0, 165, 80, 0.2);
+    }
+    /* Hide default Streamlit header and footer */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+</style>
+""", unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
@@ -38,7 +156,7 @@ def load_data():
             
     if "embedding" in df.columns:
         # Check if it's already a list (if parquet) or string (csv)
-        if isinstance(df["embedding"].iloc[0], str):
+        if df["embedding"].notna().any() and isinstance(df["embedding"].iloc[0], str):
             df["embedding"] = df["embedding"].apply(parse_embedding)
             
     return df
@@ -57,17 +175,24 @@ def cosine_similarity(a, b):
 
 df = load_data()
 
-st.title("Portfolio Semantic Search")
+# --- Header Section ---
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if os.path.exists(LOGO_FILE):
+        st.image(LOGO_FILE, width=150) # Adjust sizing as needed
+    st.markdown("<h1 style='text-align: center; color: #1e1e1e;'>Portfolio Search</h1>", unsafe_allow_html=True)
 
 if df is None:
     st.warning(f"Embedding file `{EMBED_FILE}` not found. Please run `generate_embeddings.py` first.")
     st.stop()
 
-query = st.text_input("Enter your search query:", placeholder="e.g., AI companies in bio-tech")
+# --- Search Section ---
+st.markdown("###") # Spacer
+query = st.text_input("", placeholder="🔍 Search for companies (e.g., 'Biotech startups in NYC using AI')", label_visibility="collapsed")
 
 if query:
     try:
-        with st.spinner("Generating embedding for query..."):
+        with st.spinner("Finding matches..."):
             query_embedding = genai.embed_content(
                 model="models/text-embedding-004",
                 content=str(query),
@@ -84,7 +209,7 @@ if query:
         filtered_df = filtered_df[valid_mask]
         
         if filtered_df.empty:
-            st.warning("No operating companies found with valid embeddings.")
+            st.info("No matching operating companies found.")
         else:
             filtered_df["similarity"] = filtered_df["embedding"].apply(lambda x: cosine_similarity(query_embedding, x))
             
@@ -101,42 +226,54 @@ if query:
             # A simple way is to use a callback or just reset if query changed? 
             # Streamlit reruns on input change.
             
-            # Display
-            total_results = len(results)
-            start_idx = 0 # Simple pagination: Just show top 20 for now as per requirement "Rank all the results, 20 per page"
-            # Getting full pagination logic in Streamlit can be tricky with reruns.
-            # Let's implement basic "next page" logic manually or just use slicing.
-            
-            # Fix: We'll just show the first page by default, and maybe a "Load More" or proper pagination controls.
-            # Requirement: "Rank all the results, 20 per page starting from the highest similarity."
-            
             # Let's do simple query parameter or session state for page
             # To detect query change, we can check session state
             if "last_query" not in st.session_state or st.session_state.last_query != query:
                 st.session_state.page_number = 0
                 st.session_state.last_query = query
             
+            total_results = len(results)
             page = st.session_state.page_number
             start = page * ITEMS_PER_PAGE
-            end = start + ITEMS_PER_PAGE
-            
+            end = start + ITEMS_PER_PAGE            
             page_results = results.iloc[start:end]
             
-            st.write(f"Showing results {start+1}-{min(end, total_results)} of {total_results}")
+            st.markdown(f"<div style='margin-bottom: 20px; color: #666; font-size: 0.9em;'>Found {total_results} companies. Showing {start+1}-{min(end, total_results)}.</div>", unsafe_allow_html=True)
             
             for _, row in page_results.iterrows():
-                # Name - Website - Program Category - FA Code
-                # Primary Location (City), Primary Location (Country)
-                # Description
+                # Data Prep
+                website = row['Website']
+                if not str(website).startswith("http"):
+                    website = f"https://{website}"
+                    
+                city = row.get('Primary Location (City)', '')
+                country = row.get('Primary Location (Country)', '')
+                location_str = f"{city}, {country}".strip(", ")
                 
-                with st.container(border=True):
-                    header = f"**{row['Name']}** - [{row['Website']}](https://{row['Website']}) - {row['Program Category']} - {row['FA Code']}"
-                    st.markdown(header)
-                    st.text(f"{row.get('Primary Location (City)', '')}, {row.get('Primary Location (Country)', '')}")
-                    # Map Description (SOSV) as Description
-                    desc = row.get('Description (SOSV)', row.get('Description', ''))
-                    st.markdown(desc)
-                    st.caption(f"Similarity: {row['similarity']:.4f}")
+                desc = row.get('Description (SOSV)', row.get('Description', ''))
+                
+                # Render Card
+                st.markdown(f"""
+                <div class="result-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <a href="{website}" target="_blank" class="company-name">{row['Name']}</a>
+                            <div class="location-text">📍 {location_str}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row['similarity']*100)}%</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 8px; margin-bottom: 12px;">
+                        <span class="meta-tag">{row['Program Category']}</span>
+                        <span class="meta-tag">{row['FA Code']}</span>
+                        <span class="meta-tag" style="background-color: {'#e6f4ea' if row['Status'] == 'Operating' else '#fce8e6'}; color: {'#137333' if row['Status'] == 'Operating' else '#c5221f'};">{row['Status']}</span>
+                    </div>
+                    
+                    <div class="description-text">{desc}</div>
+                </div>
+                """, unsafe_allow_html=True)
             
             # Pagination Controls
             col1, col2, col3 = st.columns([1, 8, 1])
@@ -155,4 +292,10 @@ if query:
         st.error(f"Error during search: {e}")
 
 else:
-    st.info("Enter a query to start searching.")
+    # Empty State with a nice prompt or graphic if desired
+    st.markdown("""
+        <div style="text-align: center; margin-top: 50px; color: #888;">
+            <p style="font-size: 1.2rem;">Enter keywords above to semantic search the portfolio.</p>
+            <p style="font-size: 0.9rem;">Try searching for technologies, industries, or specific problems.</p>
+        </div>
+    """, unsafe_allow_html=True)
