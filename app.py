@@ -277,18 +277,18 @@ if query:
                 status_bg = "#e6f4ea" if is_operating else "#fce8e6"
                 status_color = "#137333" if is_operating else "#c5221f"
 
-                # Compact Layout: Name + Tags in one line (wrapping), Location below, then Description
+                # Compact Layout: Name + Tags + Location in one wrapping flex container
                 card_html = (
                     f'<div class="result-card">'
                     f'<div style="display: flex; justify-content: space-between; align-items: start;">'
                     f'  <div style="flex: 1; margin-right: 12px;">'
                     f'      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">'
                     f'          <a href="{website}" target="_blank" class="company-name" style="margin-bottom: 0; line-height: 1.2;">{row["Name"]}</a>'
+                    f'          <span class="location-text" style="font-size: 0.9rem; margin-bottom: 0; color: #555;">📍 {location_str}</span>'
                     f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["Program Category"]}</span>'
                     f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["FA Code"]}</span>'
                     f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem; background-color: {status_bg}; color: {status_color};">{status}</span>'
                     f'      </div>'
-                    f'      <div class="location-text" style="margin-bottom: 8px;">📍 {location_str}</div>'
                     f'  </div>'
                     f'  <div style="text-align: right; white-space: nowrap;">'
                     f'      <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row["similarity"]*100)}%</span>'
