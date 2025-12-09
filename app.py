@@ -271,19 +271,30 @@ if query:
                 
                 # Render Card
                 # We essentially minify the HTML to avoid any Markdown indentation issues.
+                # Render Card
+                status = row["Status"]
+                is_operating = status == "Operating"
+                status_bg = "#e6f4ea" if is_operating else "#fce8e6"
+                status_color = "#137333" if is_operating else "#c5221f"
+
+                # Compact Layout: Name + Tags in one line (wrapping), Location below, then Description
                 card_html = (
                     f'<div class="result-card">'
                     f'<div style="display: flex; justify-content: space-between; align-items: start;">'
-                    f'<div><a href="{website}" target="_blank" class="company-name">{row["Name"]}</a>'
-                    f'<div class="location-text">📍 {location_str}</div></div>'
-                    f'<div style="text-align: right;"><span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row["similarity"]*100)}%</span></div>'
+                    f'  <div style="flex: 1; margin-right: 12px;">'
+                    f'      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">'
+                    f'          <a href="{website}" target="_blank" class="company-name" style="margin-bottom: 0; line-height: 1.2;">{row["Name"]}</a>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["Program Category"]}</span>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">{row["FA Code"]}</span>'
+                    f'          <span class="meta-tag" style="margin: 0; padding: 2px 8px; font-size: 0.75rem; background-color: {status_bg}; color: {status_color};">{status}</span>'
+                    f'      </div>'
+                    f'      <div class="location-text" style="margin-bottom: 8px;">📍 {location_str}</div>'
+                    f'  </div>'
+                    f'  <div style="text-align: right; white-space: nowrap;">'
+                    f'      <span style="font-size: 0.8rem; color: #999; font-weight: 600;">Match: {int(row["similarity"]*100)}%</span>'
+                    f'  </div>'
                     f'</div>'
-                    f'<div style="margin-top: 8px; margin-bottom: 12px;">'
-                    f'<span class="meta-tag">{row["Program Category"]}</span>'
-                    f'<span class="meta-tag">{row["FA Code"]}</span>'
-                    f'<span class="meta-tag" style="background-color: {"#e6f4ea" if row["Status"] == "Operating" else "#fce8e6"}; color: {"#137333" if row["Status"] == "Operating" else "#c5221f"};">{row["Status"]}</span>'
-                    f'</div>'
-                    f'<div class="description-text">{desc}</div>'
+                    f'<div class="description-text" style="margin-top: 0;">{desc}</div>'
                     f'</div>'
                 )
                 st.markdown(card_html, unsafe_allow_html=True)
