@@ -42,6 +42,7 @@ st.markdown("""
     .stTextInput > div > div > input {
         background-color: #ffffff !important;
         color: #000000 !important;
+        font-size: 1.2rem;
         border-radius: 12px;
         border: 1px solid #e0e0e0;
         padding: 12px 16px;
@@ -93,7 +94,7 @@ st.markdown("""
         font-weight: 500;
     }
     .description-text {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: #333;
         line-height: 1.6;
         margin-top: 12px;
@@ -287,20 +288,11 @@ if query:
                 
                 # Render Card
                 # We essentially minify the HTML to avoid any Markdown indentation issues.
-                # Render Card
+                # Status Colors
                 status = row["Status"]
                 is_operating = status == "Operating"
                 status_bg = "#e6f4ea" if is_operating else "#fce8e6"
                 status_color = "#137333" if is_operating else "#c5221f"
-
-                # Export Button
-                csv = results.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    label="Download Results as CSV",
-                    data=csv,
-                    file_name='portfolio_search_results.csv',
-                    mime='text/csv',
-                )
 
                 # Compact Layout: Name + Tags + Location in one wrapping flex container
                 card_html = (
