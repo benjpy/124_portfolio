@@ -185,7 +185,7 @@ if os.path.exists(LOGO_FILE):
     logo_b64 = get_base64_image(LOGO_FILE)
     st.markdown(f"""
         <div class="header-container">
-            <img src="data:image/png;base64,{logo_b64}" class="logo-img">
+            <img src="data:image/png;base64,{logo_b64}" class="logo-img" style="width: 150px; max-width: 150px;">
             <h1 style='color: #1e1e1e; margin: 0; padding: 0;'>Portfolio Search</h1>
         </div>
     """, unsafe_allow_html=True)
